@@ -2,11 +2,15 @@ import os
 import streamlit as st
 from groq import Groq
 from groq import RateLimitError
-
-
+# For some reason llama doesn't work and has been deprecated! Had to research and instead
+# I'm using GPT!
+#MODEL_NAME = "llama-3.1-8b-instant"
+MODEL_NAME = "openai/gpt-oss-20b"
 GREETING_TITLE = "IT Help Desk Bot"
 GREETING_CAPTION = "You are chatting with an automated assistant, not a person."
 INPUT_HELP = "What do you need help with?"
+ERROR_MESSAGE_RATELIMIT = "The AI service is busy right now. Please wait and try again."
+ERROR_MESSAGE_EXCEPTION = "The AI service is unavailable right now. Please try again later."
 
 # Connect to Groq
 client = Groq(api_key=os.environ["GROQ_API_KEY"])
@@ -74,11 +78,9 @@ if user_input:
 
     # Get AI response
     with st.chat_message("assistant"):
-
         try:
-
             stream = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model=MODEL_NAME,
 
                 messages=[
                     {
@@ -104,20 +106,12 @@ if user_input:
                 "content": reply
             })
 
-
         # Handle rate limits
         except RateLimitError:
-
-            st.error(
-                "The AI service is busy right now. "
-                "Please wait and try again."
-            )
-
-
+            st.error(ERROR_MESSAGE_RATELIMIT)
         # Handle other errors
         except Exception:
+            st.error(ERROR_MESSAGE_EXCEPTION)
+        
 
-            st.error(
-                "The AI service is unavailable right now. "
-                "Please try again later."
-            )
+
